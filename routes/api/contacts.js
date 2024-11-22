@@ -9,6 +9,8 @@ const {
   updateStatusContact
 } = require('../../models/contacts'); 
 
+const auth = require('../../middleware/auth');
+
 const router = express.Router();
 
 const contactSchema = Joi.object({
@@ -21,7 +23,7 @@ const favoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/', auth, async (req, res, next) => {
   try {
     const contacts = await listContacts();
     res.status(200).json(contacts);
@@ -30,7 +32,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.get('/:contactId', async (req, res, next) => {
+router.get('/:contactId', auth, async (req, res, next) => {
   try {
     const contact = await getContactById(req.params.contactId);
     if (!contact) {
@@ -42,7 +44,7 @@ router.get('/:contactId', async (req, res, next) => {
   }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/',auth, async (req, res, next) => {
   try {
     const { error } = contactSchema.validate(req.body);
     if (error) {
@@ -55,7 +57,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.delete('/:contactId', async (req, res, next) => {
+router.delete('/:contactId',auth, async (req, res, next) => {
   try {
     const removedContact = await removeContact(req.params.contactId);
     if (!removedContact) {
@@ -67,7 +69,7 @@ router.delete('/:contactId', async (req, res, next) => {
   }
 });
 
-router.put('/:contactId', async (req, res, next) => {
+router.put('/:contactId',auth, async (req, res, next) => {
   try {
     const { error } = contactSchema.validate(req.body);
     if (error) {
@@ -83,7 +85,7 @@ router.put('/:contactId', async (req, res, next) => {
   }
 });
 
-router.patch('/:contactId/favorite', async (req, res, next) => {
+router.patch('/:contactId/favorite', auth, async (req, res, next) => {
   try {
     const { error } = favoriteSchema.validate(req.body);
     if (error) {
@@ -100,5 +102,4 @@ router.patch('/:contactId/favorite', async (req, res, next) => {
     next(error);  
   }
 });
-
 module.exports = router;
