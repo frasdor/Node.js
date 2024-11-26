@@ -8,8 +8,9 @@ const {
   updateContact,
   updateStatusContact
 } = require('../../models/contacts'); 
-
+const { updateAvatar } = require('../../controllers/auth');
 const auth = require('../../middleware/auth');
+const upload = require('../../middleware/uploads');
 
 const router = express.Router();
 
@@ -102,4 +103,7 @@ router.patch('/:contactId/favorite', auth, async (req, res, next) => {
     next(error);  
   }
 });
+
+router.patch('/users/avatars', auth, upload.single('avatar'), updateAvatar);
+
 module.exports = router;
