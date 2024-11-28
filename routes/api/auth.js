@@ -13,6 +13,6 @@ router.get('/logout', auth, logout);
 
 router.get('/current', auth, currentUser);
 
-router.patch('/users/avatars', auth, upload.single('avatar'), updateAvatar);
+router.patch('/avatars', auth, upload.single('avatar'), updateAvatar);
 
 module.exports = router;
