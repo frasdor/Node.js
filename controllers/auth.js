@@ -2,6 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const sgMail = require('@sendgrid/mail');
+const gravatar = require('gravatar');
+const Jimp = require('jimp');
+const fs = require('fs/promises');
+const path = require('path');
 const User = require('../models/user');
 require('dotenv').config();
 
@@ -16,12 +20,15 @@ const signup = async (req, res, next) => {
       return res.status(409).json({ message: 'Email in use' });
     }
 
+    const avatarURL = gravatar.url(email, { s: '250', d: 'identicon' });
     const hashedPassword = await bcrypt.hash(password, 10);
-    const verificationToken = uuidv4();
+
+    const verificationToken = uuidv4(); 
 
     const newUser = await User.create({ 
       email, 
       password: hashedPassword,
+      avatarURL, // add
       verificationToken,
      });
 
@@ -34,14 +41,16 @@ const signup = async (req, res, next) => {
       html: `<a href="${verificationLink}">Verify your email</a>`,
     };
 
-    await sgMail.send(msg);
+    await sgMail.send(msg);// zostaje
+
 
     res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarURL: newUser.avatarURL,
       },
-      message: 'User registered. Verification email sent.',
+      message: 'User registered. Verification email sent.', //zostaje
     });
   } catch (err) {
     next(err);
@@ -87,7 +96,7 @@ const resendVerificationEmail = async (req, res, next) => {
 
     const msg = {
       to: email,
-      from: 'your-email@example.com', // Replace with your verified email
+      from: 'frasunkiewicz.dorota@gmail.com', 
       subject: 'Verify your email',
       text: `Please verify your email by clicking on the following link: ${verificationLink}`,
       html: `<a href="${verificationLink}">Verify your email</a>`,
@@ -140,7 +149,34 @@ const currentUser = (req, res) => {
   res.status(200).json({
     email: req.user.email,
     subscription: req.user.subscription,
+    avatarURL: req.user.avatarURL,
   });
+};
+
+const updateAvatar = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+
+  try {
+    const filePath = req.file.path;  
+    const publicDir = path.join(__dirname, '..', 'public', 'avatars');
+    const fileName = `${req.user.id}-${req.file.filename}`; 
+    const finalPath = path.join(publicDir, fileName);  
+
+    const image = await Jimp.read(filePath);
+    await image.resize(250, 250).writeAsync(finalPath); 
+
+    await fs.unlink(filePath);
+
+    const avatarURL = `/avatars/${fileName}`;
+    req.user.avatarURL = avatarURL;
+    await req.user.save();
+
+    res.json({ avatarURL });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 module.exports = { 
@@ -150,4 +186,5 @@ module.exports = {
   currentUser, 
   verifyEmail,
   resendVerificationEmail, 
+  updateAvatar 
 };
