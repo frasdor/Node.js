@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const sgMail = require('@sendgrid/mail');
 const User = require('../models/user');
+require('dotenv').config();
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
