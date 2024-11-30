@@ -21,13 +21,12 @@ const signup = async (req, res, next) => {
     }
 
     const avatarURL = gravatar.url(email, { s: '250', d: 'identicon' });
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     const verificationToken = uuidv4(); 
 
     const newUser = await User.create({ 
       email, 
-      password: hashedPassword,
+      password,
       avatarURL, 
       verificationToken,
      });
