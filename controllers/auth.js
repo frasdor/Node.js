@@ -28,7 +28,7 @@ const signup = async (req, res, next) => {
     const newUser = await User.create({ 
       email, 
       password: hashedPassword,
-      avatarURL, // add
+      avatarURL, 
       verificationToken,
      });
 
@@ -41,7 +41,7 @@ const signup = async (req, res, next) => {
       html: `<a href="${verificationLink}">Verify your email</a>`,
     };
 
-    await sgMail.send(msg);// zostaje
+    await sgMail.send(msg);
 
 
     res.status(201).json({
@@ -50,7 +50,7 @@ const signup = async (req, res, next) => {
         subscription: newUser.subscription,
         avatarURL: newUser.avatarURL,
       },
-      message: 'User registered. Verification email sent.', //zostaje
+      message: 'User registered. Verification email sent.', 
     });
   } catch (err) {
     next(err);
